@@ -26,9 +26,8 @@
         #include "UnityCG.cginc"
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf Standard vertex:vert
-
-        // Use shader model 3.0 target, to get nicer looking lighting
-        #pragma target 3.0
+       
+        #pragma target 5.0
 
         sampler2D _MainTex;
 
@@ -56,7 +55,7 @@
         UNITY_INSTANCING_BUFFER_START(Props)
         // put more per-instance properties here
         UNITY_INSTANCING_BUFFER_END(Props)
-        
+
         // RGB->HSV変換
         float3 rgb2hsv(float3 rgb)
         {
@@ -172,7 +171,7 @@
         void vert(inout appdata_full v, out Input o) {
             // height map
             float d = tex2Dlod(_HeightMap, float4(v.texcoord.xy,0,0)).a * _Height;
-            v.vertex.xyz += d.r;
+            v.vertex.xyz += v.normal * d;
 
             // 輝度計算
             UNITY_INITIALIZE_OUTPUT(Input, o);
@@ -185,7 +184,7 @@
         void surf (Input IN, inout SurfaceOutputStandard o) { 
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-            half3 shift = half3(_Hue * IN.luminance * 0.1f, _Sat * IN.luminance, _Val * IN.luminance);
+            half3 shift = half3(saturate(_Hue * IN.luminance), saturate(_Sat * IN.luminance), saturate(_Val * IN.luminance));
 
             //half brightness = getBrightness(c.rgb);  
             // 明度がThresholdより大きいピクセルだけブルームの対象とする
